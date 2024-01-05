@@ -1,0 +1,29 @@
+import cv2
+import os
+from datetime import datetime
+
+def fotograf_cek_ve_kaydet(kayit_klasoru='fotolar'):
+    # Kamera nesnesini oluştur
+    cap = cv2.VideoCapture(0)
+
+    # Kamera görüntüsünü al
+    ret, frame = cap.read()
+
+    # Kayıt klasörünü oluştur
+    if not os.path.exists(kayit_klasoru):
+        os.makedirs(kayit_klasoru)
+
+    # Fotoğraf adını tarih ve saat ile belirle
+    tarih_saat = datetime.now().strftime("%Y%m%d%H%M%S")
+    fotograf_adresi = os.path.join(kayit_klasoru, f'foto_{tarih_saat}.jpg')
+
+    # Fotoğrafı kaydet
+    cv2.imwrite(fotograf_adresi, frame)
+
+    # Kamera bağlantısını kapat
+    cap.release()
+
+    print(f'Fotoğraf başarıyla kaydedildi: {fotograf_adresi}')
+
+# Fonksiyonu çağır
+fotograf_cek_ve_kaydet()
