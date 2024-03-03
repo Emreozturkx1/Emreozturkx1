@@ -1,0 +1,58 @@
+from PIL import Image
+import os
+from datetime import datetime
+
+def get_taken_date_from_exif(file_path):
+    try:
+        with Image.open(file_path) as img:
+            exif_data = img._getexif()
+            if exif_data and 36867 in exif_data:
+                taken_date = datetime.strptime(exif_data[36867], "%Y:%m:%d %H:%M:%S")
+                return taken_date
+    except Exception as e:
+        print(f"Hata oluştu: {e}")
+    return None
+
+def organize_photos_by_year(folder_path, file_extensions=[".img", ".png", ".jpeg", ".jpg", ".mp4", ".JPG", ".3gp"]):
+    for filename in os.listdir(folder_path):
+        if any(filename.lower().endswith(ext) for ext in file_extensions):
+            file_path = os.path.join(folder_path, filename)
+            try:
+                # Fotoğrafın çekildiği tarih bilgisini al
+                taken_date = get_taken_date_from_exif(file_path)
+                
+                if taken_date:
+                    # Yıl bilgisini al
+                    year = taken_date.year
+                    
+                    # Eğer fotoğraf 2024 yılına aitse
+                    if year == 2024:
+                        # Hedef klasörü oluştur
+                        target_folder = os.path.join(folder_path, str(year))
+                        if not os.path.exists(target_folder):
+                            os.makedirs(target_folder)
+                        
+                        # Yeni ismi oluştur
+                        new_name = taken_date.strftime("%Y%m%d_%H%M%S") + os.path.splitext(filename)[1].lower()
+                        
+                        # Hedef klasöre taşıma işlemi
+                        new_path = os.path.join(target_folder, new_name)
+                        
+                        # Eğer hedef dosya zaten varsa, başka bir adla kaydet
+                        if os.path.exists(new_path):
+                            base, ext = os.path.splitext(new_name)
+                            new_name = base + "_1" + ext
+                            new_path = os.path.join(target_folder, new_name)
+                        
+                        os.rename(file_path, new_path)
+            except Exception as e:
+                print(f"Hata oluştu: {e}")
+
+# Kullanılacak klasörü belirt
+folder_path = r"C:\Users\eneso\OneDrive\Desktop\ad degistirme klasörü"
+
+# İşlem yapılacak dosya uzantılarını belirt
+file_extensions = [".img", ".png", ".jpeg", ".jpg", ".mp4", ".JPG", ".3gp"]
+
+# Fonksiyonu çağır
+organize_photos_by_year(folder_path, file_extensions)
